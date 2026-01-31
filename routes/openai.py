@@ -137,6 +137,7 @@ async def chat_completions(request: Request):
                     def process_data():
                         nonlocal has_content
                         ptype = "text"
+                        logger.info(f"[sse_stream] 开始处理数据流, session_id={session_id}")
                         try:
                             for raw_line in deepseek_resp.iter_lines():
                                 try:
@@ -169,6 +170,8 @@ async def chat_completions(request: Request):
                                             result_queue.put(None)
                                             return
                                         
+                                        # logger.debug(f"[sse_stream] 收到 chunk: {chunk}")
+                                        
                                         if "v" in chunk:
                                             v_value = chunk["v"]
                                             content = ""
@@ -188,12 +191,76 @@ async def chat_completions(request: Request):
                                                 if content:
                                                     has_content = True
                                             elif isinstance(v_value, list):
-                                                for item in v_value:
-                                                    if item.get("p") == "status" and item.get("v") == "FINISHED":
-                                                        result_queue.put({"choices": [{"index": 0, "finish_reason": "stop"}]})
-                                                        result_queue.put(None)
-                                                        return
+                                                # DeepSeek 可能发送嵌套列表格式
+                                                # 需要递归提取内容
+                                                def extract_content_recursive(items, default_type="text"):
+                                                    """递归提取列表中的内容"""
+                                                    extracted = []
+                                                    for item in items:
+                                                        if not isinstance(item, dict):
+                                                            continue
+                                                        
+                                                        # 检查是否是 FINISHED 状态
+                                                        if item.get("p") == "status" and item.get("v") == "FINISHED":
+                                                            return None  # 信号结束
+                                                        
+                                                        item_p = item.get("p", "")
+                                                        item_v = item.get("v")
+                                                        
+                                                        # 跳过搜索状态
+                                                        if item_p == "response/search_status":
+                                                            continue
+                                                        
+                                                        # 确定类型
+                                                        if "thinking" in item_p:
+                                                            content_type = "thinking"
+                                                        elif "content" in item_p or item_p == "response":
+                                                            content_type = "text"
+                                                        else:
+                                                            content_type = default_type
+                                                        
+                                                        # 处理不同的 v 类型
+                                                        if isinstance(item_v, str):
+                                                            if item_v and item_v != "FINISHED":
+                                                                extracted.append((item_v, content_type))
+                                                        elif isinstance(item_v, list):
+                                                            # 内层可能是 [{"content": "text", ...}] 格式
+                                                            for inner in item_v:
+                                                                if isinstance(inner, dict):
+                                                                    # 直接提取 content 字段
+                                                                    content = inner.get("content", "")
+                                                                    if content:
+                                                                        extracted.append((content, content_type))
+                                                                elif isinstance(inner, str) and inner:
+                                                                    extracted.append((inner, content_type))
+                                                    return extracted
+                                                
+                                                result = extract_content_recursive(v_value, ptype)
+                                                
+                                                if result is None:
+                                                    # FINISHED 信号
+                                                    result_queue.put({"choices": [{"index": 0, "finish_reason": "stop"}]})
+                                                    result_queue.put(None)
+                                                    return
+                                                
+                                                for content_text, content_type in result:
+                                                    if content_text:
+                                                        logger.debug(f"[sse_stream] 提取内容: {content_text[:30] if len(content_text) > 30 else content_text}")
+                                                        chunk = {
+                                                            "choices": [{
+                                                                "index": 0,
+                                                                "delta": {"content": content_text, "type": content_type}
+                                                            }],
+                                                            "model": "",
+                                                            "chunk_token_usage": len(content_text) // 4,
+                                                            "created": 0,
+                                                            "message_id": -1,
+                                                            "parent_id": -1
+                                                        }
+                                                        result_queue.put(chunk)
+                                                        has_content = True
                                                 continue
+                                            
                                             unified_chunk = {
                                                 "choices": [{
                                                     "index": 0,

@@ -231,7 +231,7 @@ async def test_account_api(account: dict, model: str = "deepseek-chat", message:
             DEEPSEEK_COMPLETION_URL,
             headers=completion_headers,
             json=payload,
-            impersonate="safari15_4",
+            impersonate="safari15_3",
             timeout=60,
             stream=True,
         )
@@ -277,9 +277,37 @@ async def test_account_api(account: dict, model: str = "deepseek-chat", message:
                         else:
                             content_parts.append(v_value)
                     elif isinstance(v_value, list):
+                        # DeepSeek V3 嵌套列表格式处理
                         for item in v_value:
+                            if not isinstance(item, dict):
+                                continue
                             if item.get("p") == "status" and item.get("v") == "FINISHED":
                                 break
+                            
+                            item_p = item.get("p", "")
+                            item_v = item.get("v")
+                            
+                            if item_p == "response/search_status":
+                                continue
+                            
+                            itype = "thinking" if "thinking" in item_p else "text"
+                            
+                            # 处理不同的 v 类型
+                            if isinstance(item_v, str) and item_v:
+                                if itype == "thinking":
+                                    thinking_parts.append(item_v)
+                                else:
+                                    content_parts.append(item_v)
+                            elif isinstance(item_v, list):
+                                # 内层可能是 [{"content": "text", ...}] 格式
+                                for inner in item_v:
+                                    if isinstance(inner, dict):
+                                        content = inner.get("content", "")
+                                        if content:
+                                            if itype == "thinking":
+                                                thinking_parts.append(content)
+                                            else:
+                                                content_parts.append(content)
             except:
                 continue
         

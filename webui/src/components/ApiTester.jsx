@@ -191,6 +191,11 @@ export default function ApiTester({ config, onMessage, authFetch }) {
         directTest()
     }
 
+    useEffect(() => {
+        setMessage((prev) => (prev === defaultMessageRef.current ? defaultMessage : prev))
+        defaultMessageRef.current = defaultMessage
+    }, [defaultMessage])
+
     return (
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 h-[calc(100vh-140px)]">
             {/* Configuration Panel */}
@@ -401,7 +406,3 @@ export default function ApiTester({ config, onMessage, authFetch }) {
         </div>
     )
 }
-    useEffect(() => {
-        setMessage((prev) => (prev === defaultMessageRef.current ? defaultMessage : prev))
-        defaultMessageRef.current = defaultMessage
-    }, [defaultMessage])

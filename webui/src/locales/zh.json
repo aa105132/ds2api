@@ -221,6 +221,10 @@
         "syncSucceeded": "同步成功",
         "syncFailedLabel": "同步失败",
         "openDeployment": "访问部署地址",
+        "statusSynced": "已同步",
+        "statusNotSynced": "未同步",
+        "statusNeverSynced": "从未同步",
+        "lastSyncTime": "上次同步: {time}",
         "howItWorks": "工作原理",
         "steps": {
             "one": "当前配置 (密钥和账号) 被导出为 JSON 字符串。",

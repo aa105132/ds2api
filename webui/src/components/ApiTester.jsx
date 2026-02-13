@@ -154,6 +154,10 @@ export default function ApiTester({ config, onMessage, authFetch }) {
     }
 
     const sendTest = async () => {
+        // 清除上次的流式/思考内容，防止残留
+        setStreamingContent('')
+        setStreamingThinking('')
+
         if (selectedAccount) {
             setLoading(true)
             setResponse(null)
@@ -209,12 +213,12 @@ export default function ApiTester({ config, onMessage, authFetch }) {
                         onClick={() => setConfigExpanded(!configExpanded)}
                         className="lg:hidden flex items-center justify-between p-4 w-full bg-muted/20 hover:bg-muted/30 transition-colors"
                     >
-                            <div className="flex items-center gap-2.5 font-medium text-sm text-foreground">
-                                <div className="p-1.5 rounded-md bg-transparent text-foreground">
-                                    <Terminal className="w-4 h-4" />
-                                </div>
-                                <span>{t('apiTester.config')}</span>
+                        <div className="flex items-center gap-2.5 font-medium text-sm text-foreground">
+                            <div className="p-1.5 rounded-md bg-transparent text-foreground">
+                                <Terminal className="w-4 h-4" />
                             </div>
+                            <span>{t('apiTester.config')}</span>
+                        </div>
                         <div className={clsx("transition-transform duration-300 text-muted-foreground", configExpanded ? "rotate-180" : "")}>
                             <ChevronDown className="w-4 h-4" />
                         </div>
@@ -365,9 +369,9 @@ export default function ApiTester({ config, onMessage, authFetch }) {
                 {/* Input Area */}
                 <div className="p-4 lg:p-6 border-t border-border bg-card">
                     <div className="max-w-4xl mx-auto relative group">
-                            <textarea
-                                className="w-full bg-[#09090b] border border-border rounded-xl pl-4 pr-12 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none custom-scrollbar placeholder:text-muted-foreground/50 text-foreground shadow-inner"
-                                placeholder={t('apiTester.enterMessage')}
+                        <textarea
+                            className="w-full bg-[#09090b] border border-border rounded-xl pl-4 pr-12 py-3 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none custom-scrollbar placeholder:text-muted-foreground/50 text-foreground shadow-inner"
+                            placeholder={t('apiTester.enterMessage')}
                             rows={1}
                             style={{ minHeight: '52px' }}
                             value={message}

@@ -2,8 +2,10 @@
 """Admin Vercel 模块 - Vercel 同步和部署"""
 import asyncio
 import base64
+import hashlib
 import json
 import os
+import time as _time
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request, Depends
@@ -21,6 +23,19 @@ router = APIRouter()
 VERCEL_TOKEN = os.getenv("VERCEL_TOKEN", "")
 VERCEL_PROJECT_ID = os.getenv("VERCEL_PROJECT_ID", "")
 VERCEL_TEAM_ID = os.getenv("VERCEL_TEAM_ID", "")
+
+
+def _compute_config_hash() -> str:
+    """计算可同步配置的指纹哈希（仅包含 keys 和 accounts）"""
+    syncable = {
+        "keys": CONFIG.get("keys", []),
+        "accounts": [
+            {k: v for k, v in acc.items() if k != "token"}
+            for acc in CONFIG.get("accounts", [])
+        ],
+    }
+    raw = json.dumps(syncable, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.md5(raw.encode("utf-8")).hexdigest()
 
 
 # ----------------------------------------------------------------------
@@ -228,6 +243,10 @@ async def sync_to_vercel(request: Request, _: bool = Depends(verify_admin)):
                     
                     if deploy_resp.status_code in [200, 201]:
                         deploy_data = deploy_resp.json()
+                        # 记录同步哈希和时间
+                        CONFIG["_vercel_sync_hash"] = _compute_config_hash()
+                        CONFIG["_vercel_sync_time"] = int(_time.time())
+                        save_config(CONFIG)
                         result = {
                             "success": True,
                             "message": "配置已同步，正在重新部署...",
@@ -240,6 +259,10 @@ async def sync_to_vercel(request: Request, _: bool = Depends(verify_admin)):
                             result["saved_credentials"] = saved_credentials
                         return JSONResponse(content=result)
             
+            # 环境变量已更新，但无法自动触发重新部署
+            CONFIG["_vercel_sync_hash"] = _compute_config_hash()
+            CONFIG["_vercel_sync_time"] = int(_time.time())
+            save_config(CONFIG)
             result = {
                 "success": True,
                 "message": "配置已同步到 Vercel，请手动触发重新部署",
@@ -257,6 +280,25 @@ async def sync_to_vercel(request: Request, _: bool = Depends(verify_admin)):
     except Exception as e:
         logger.error(f"[sync_to_vercel] 错误: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ----------------------------------------------------------------------
+# 同步状态查询
+# ----------------------------------------------------------------------
+@router.get("/vercel/status")
+async def get_vercel_sync_status(_: bool = Depends(verify_admin)):
+    """检查当前配置与上次同步到 Vercel 的配置是否一致"""
+    last_hash = CONFIG.get("_vercel_sync_hash", "")
+    last_time = CONFIG.get("_vercel_sync_time", 0)
+    current_hash = _compute_config_hash()
+
+    synced = bool(last_hash and last_hash == current_hash)
+
+    return JSONResponse(content={
+        "synced": synced,
+        "last_sync_time": last_time if last_time else None,
+        "has_synced_before": bool(last_hash),
+    })
 
 
 # ----------------------------------------------------------------------

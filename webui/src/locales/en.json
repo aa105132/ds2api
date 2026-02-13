@@ -221,6 +221,10 @@
         "syncSucceeded": "Sync succeeded",
         "syncFailedLabel": "Sync failed",
         "openDeployment": "Open deployment",
+        "statusSynced": "Synced",
+        "statusNotSynced": "Not synced",
+        "statusNeverSynced": "Never synced",
+        "lastSyncTime": "Last sync: {time}",
         "howItWorks": "How it works",
         "steps": {
             "one": "The current configuration (keys and accounts) is exported as JSON.",

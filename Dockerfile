@@ -27,7 +27,7 @@ COPY . .
 COPY --from=webui-builder /app/static/admin /app/static/admin
 
 # 暴露服务端口
-EXPOSE 5001
+EXPOSE 5050
 
 # 启动命令（依赖项目自身的启动逻辑）
 CMD ["python", "app.py"]

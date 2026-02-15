@@ -56,7 +56,7 @@ async def test_api(request: Request, _: bool = Depends(verify_admin)):
                 raise HTTPException(status_code=400, detail="没有可用的 API Key")
             api_key = keys[0]
         
-        host = request.headers.get("host", "localhost:5001")
+        host = request.headers.get("host", "localhost:5050")
         scheme = "https" if "vercel" in host.lower() else "http"
         base_url = f"{scheme}://{host}"
         

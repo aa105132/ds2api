@@ -10,7 +10,7 @@ DS2API 开发服务器 - 统一启动后端和前端
     python dev.py --install   # 安装所有依赖
 
 环境变量:
-    PORT - 后端服务端口，默认 5001
+    PORT - 后端服务端口，默认 5050
     LOG_LEVEL - 日志级别，默认 INFO
 """
 import os
@@ -21,7 +21,7 @@ import time
 from pathlib import Path
 
 # 配置
-BACKEND_PORT = int(os.getenv("PORT", "5001"))
+BACKEND_PORT = int(os.getenv("PORT", "5050"))
 FRONTEND_PORT = 5173
 HOST = os.getenv("HOST", "0.0.0.0")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "info").lower()

@@ -8,7 +8,7 @@ DS2API - DeepSeek to OpenAI API 转换服务
 
 使用方法:
     本地开发: python dev.py
-    生产环境: uvicorn app:app --host 0.0.0.0 --port 5001
+    生产环境: uvicorn app:app --host 0.0.0.0 --port 5050
     Vercel: 自动部署
 """
 import os
@@ -65,5 +65,5 @@ app.include_router(home_router)
 if __name__ == "__main__" and not IS_VERCEL:
     import uvicorn
 
-    port = int(os.getenv("PORT", "5001"))
+    port = int(os.getenv("PORT", "5050"))
     uvicorn.run(app, host="0.0.0.0", port=port)

@@ -81,7 +81,7 @@ cp config.example.json config.json
 python dev.py
 ```
 
-服务启动后访问 `http://localhost:5001`
+服务启动后访问 `http://localhost:5050`
 
 ## ⚙️ 配置说明
 
@@ -93,7 +93,7 @@ python dev.py
 | `DS2API_CONFIG_JSON` | 配置 JSON 或 Base64 编码 | 可选 |
 | `VERCEL_TOKEN` | Vercel API Token（用于同步） | 可选 |
 | `VERCEL_PROJECT_ID` | Vercel 项目 ID | 可选 |
-| `PORT` | 服务端口（默认 5001） | 可选 |
+| `PORT` | 服务端口（默认 5050） | 可选 |
 
 ### 配置文件格式 (`config.json`)
 
@@ -128,12 +128,12 @@ python dev.py
 
 **获取模型列表**：
 ```bash
-curl http://localhost:5001/v1/models
+curl http://localhost:5050/v1/models
 ```
 
 **OpenAI 格式调用**：
 ```bash
-curl http://localhost:5001/v1/chat/completions \
+curl http://localhost:5050/v1/chat/completions \
   -H "Authorization: Bearer your-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -145,7 +145,7 @@ curl http://localhost:5001/v1/chat/completions \
 
 **Claude 格式调用**：
 ```bash
-curl http://localhost:5001/anthropic/v1/messages \
+curl http://localhost:5050/anthropic/v1/messages \
   -H "x-api-key: your-api-key" \
   -H "Content-Type: application/json" \
   -H "anthropic-version: 2023-06-01" \
@@ -163,7 +163,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="your-api-key",
-    base_url="http://localhost:5001/v1"
+    base_url="http://localhost:5050/v1"
 )
 
 response = client.chat.completions.create(
@@ -183,7 +183,7 @@ for chunk in response:
 
 ```nginx
 location / {
-    proxy_pass http://localhost:5001;
+    proxy_pass http://localhost:5050;
     proxy_http_version 1.1;
     proxy_set_header Connection "";
     proxy_buffering off;

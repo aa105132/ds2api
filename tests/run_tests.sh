@@ -19,7 +19,7 @@ NC='\033[0m'
 # 检查服务是否运行
 check_service() {
     echo -e "${YELLOW}检查服务状态...${NC}"
-    if curl -s http://localhost:5001/ > /dev/null 2>&1; then
+    if curl -s http://localhost:5050/ > /dev/null 2>&1; then
         echo -e "${GREEN}✅ 服务运行中${NC}"
         return 0
     else

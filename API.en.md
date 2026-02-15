@@ -30,7 +30,7 @@ This document describes all DS2API API endpoints.
 
 | Item | Description |
 |-----|------|
-| **Base URL** | `https://your-domain.com` or `http://localhost:5001` |
+| **Base URL** | `https://your-domain.com` or `http://localhost:5050` |
 | **OpenAI auth** | `Authorization: Bearer <api-key>` |
 | **Claude auth** | `x-api-key: <api-key>` |
 | **Response format** | JSON |

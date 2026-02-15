@@ -126,7 +126,7 @@ npm install
 npm run dev
 ```
 
-WebUI 开发服务器会启动在 `http://localhost:5173`，并自动代理 API 请求到后端 `http://localhost:5001`。
+WebUI 开发服务器会启动在 `http://localhost:5173`，并自动代理 API 请求到后端 `http://localhost:5050`。
 
 ### WebUI 构建
 
@@ -187,7 +187,7 @@ services:
   ds2api:
     build: .
     ports:
-      - "5001:5001"
+      - "5050:5050"
     environment:
       - DS2API_ADMIN_KEY=your-admin-key
     volumes:
@@ -204,7 +204,7 @@ docker build -t ds2api:latest .
 # 使用环境变量运行
 docker run -d \
   --name ds2api \
-  -p 5001:5001 \
+  -p 5050:5050 \
   -e DS2API_ADMIN_KEY=your-admin-key \
   -e DS2API_CONFIG_JSON='{"keys":["api-key"],"accounts":[...]}' \
   --restart unless-stopped \
@@ -213,7 +213,7 @@ docker run -d \
 # 或使用配置文件挂载
 docker run -d \
   --name ds2api \
-  -p 5001:5001 \
+  -p 5050:5050 \
   -e DS2API_ADMIN_KEY=your-admin-key \
   -v $(pwd)/config.json:/app/config.json:ro \
   --restart unless-stopped \
@@ -277,7 +277,7 @@ WorkingDirectory=/opt/ds2api
 ExecStart=/usr/bin/python3 app.py
 Restart=always
 RestartSec=10
-Environment=PORT=5001
+Environment=PORT=5050
 Environment=DS2API_ADMIN_KEY=your-admin-key
 
 [Install]
@@ -312,7 +312,7 @@ server {
     # ssl_certificate_key /path/to/key.pem;
 
     location / {
-        proxy_pass http://127.0.0.1:5001;
+        proxy_pass http://127.0.0.1:5050;
         proxy_http_version 1.1;
         
         # 关闭缓冲，支持 SSE

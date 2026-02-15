@@ -14,7 +14,7 @@ services:
     image: ds2api:latest
     container_name: ds2api
     ports:
-      - "${PORT:-5001}:5001"
+      - "${PORT:-5050}:5050"
     env_file:
       - .env
     environment:
@@ -22,7 +22,7 @@ services:
       - HOST=0.0.0.0
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/v1/models')"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5050/v1/models')"]
       interval: 30s
       timeout: 10s
       retries: 3

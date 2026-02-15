@@ -79,7 +79,7 @@ cp config.example.json config.json
 python dev.py
 ```
 
-Visit `http://localhost:5001` after startup.
+Visit `http://localhost:5050` after startup.
 
 ## ⚙️ Configuration
 
@@ -91,7 +91,7 @@ Visit `http://localhost:5001` after startup.
 | `DS2API_CONFIG_JSON` | Config JSON or Base64 | Optional |
 | `VERCEL_TOKEN` | Vercel API token (for sync) | Optional |
 | `VERCEL_PROJECT_ID` | Vercel project ID | Optional |
-| `PORT` | Service port (default 5001) | Optional |
+| `PORT` | Service port (default 5050) | Optional |
 
 ### Config file format (`config.json`)
 
@@ -126,12 +126,12 @@ See **[API.md](API.md)** for full API documentation.
 
 **List models**:
 ```bash
-curl http://localhost:5001/v1/models
+curl http://localhost:5050/v1/models
 ```
 
 **OpenAI-compatible call**:
 ```bash
-curl http://localhost:5001/v1/chat/completions \
+curl http://localhost:5050/v1/chat/completions \
   -H "Authorization: Bearer your-api-key" \
   -H "Content-Type: application/json" \
   -d '{
@@ -143,7 +143,7 @@ curl http://localhost:5001/v1/chat/completions \
 
 **Claude-compatible call**:
 ```bash
-curl http://localhost:5001/anthropic/v1/messages \
+curl http://localhost:5050/anthropic/v1/messages \
   -H "x-api-key: your-api-key" \
   -H "Content-Type: application/json" \
   -H "anthropic-version: 2023-06-01" \
@@ -161,7 +161,7 @@ from openai import OpenAI
 
 client = OpenAI(
     api_key="your-api-key",
-    base_url="http://localhost:5001/v1"
+    base_url="http://localhost:5050/v1"
 )
 
 response = client.chat.completions.create(
@@ -181,7 +181,7 @@ for chunk in response:
 
 ```nginx
 location / {
-    proxy_pass http://localhost:5001;
+    proxy_pass http://localhost:5050;
     proxy_http_version 1.1;
     proxy_set_header Connection "";
     proxy_buffering off;

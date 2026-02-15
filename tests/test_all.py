@@ -32,7 +32,7 @@ import requests
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # 测试配置
-DEFAULT_ENDPOINT = "http://localhost:5001"
+DEFAULT_ENDPOINT = "http://localhost:5050"
 TEST_API_KEY = "test-api-key-001"  # 配置中的 API key
 TEST_TIMEOUT = 120  # 超时时间（秒）
 

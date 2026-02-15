@@ -30,7 +30,7 @@
 
 | 项目 | 说明 |
 |-----|------|
-| **Base URL** | `https://your-domain.com` 或 `http://localhost:5001` |
+| **Base URL** | `https://your-domain.com` 或 `http://localhost:5050` |
 | **OpenAI 认证** | `Authorization: Bearer <api-key>` |
 | **Claude 认证** | `x-api-key: <api-key>` |
 | **响应格式** | JSON |

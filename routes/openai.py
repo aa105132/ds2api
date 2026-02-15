@@ -78,7 +78,46 @@ async def chat_completions(request: Request):
                 status_code=500, content={"error": "Account login failed."}
             )
 
-        req_data = await request.json()
+        try:
+            raw_body = await request.body()
+            if not raw_body:
+                logger.error(f"[chat_completions] 请求体为空 (Content-Type: {request.headers.get('content-type', 'N/A')}, Content-Length: {request.headers.get('content-length', 'N/A')})")
+                return JSONResponse(
+                    status_code=400,
+                    content={
+                        "error": {
+                            "message": "Request body is empty. Please send a JSON body with 'model' and 'messages' fields.",
+                            "type": "invalid_request_error",
+                            "code": "empty_body",
+                        }
+                    },
+                )
+            req_data = json.loads(raw_body)
+        except json.JSONDecodeError as json_err:
+            body_preview = raw_body[:200].decode("utf-8", errors="replace") if raw_body else "<empty>"
+            logger.error(f"[chat_completions] 请求体 JSON 解析失败: {json_err}, body preview: {body_preview}")
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": {
+                        "message": "Invalid request body: expected valid JSON with 'model' and 'messages' fields.",
+                        "type": "invalid_request_error",
+                        "code": "invalid_json",
+                    }
+                },
+            )
+        except Exception as parse_err:
+            logger.error(f"[chat_completions] 请求体解析异常: {parse_err}")
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "error": {
+                        "message": "Failed to parse request body.",
+                        "type": "invalid_request_error",
+                        "code": "parse_error",
+                    }
+                },
+            )
         model = req_data.get("model")
         messages = req_data.get("messages", [])
         if not model or not messages:

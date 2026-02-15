@@ -42,7 +42,7 @@ def install_dependencies():
     
     if WEBUI_DIR.exists():
         print("\n📦 安装前端依赖...")
-        subprocess.run(["npm", "install"], cwd=WEBUI_DIR, check=True)
+        subprocess.run(["npm", "install"], cwd=WEBUI_DIR, check=True, shell=True)
         print("✅ 前端依赖安装完成")
     
     print("\n🎉 所有依赖安装完成！运行 `python dev.py` 启动服务\n")
@@ -90,12 +90,13 @@ def start_frontend():
     node_modules = WEBUI_DIR / "node_modules"
     if not node_modules.exists():
         print("📦 安装前端依赖...")
-        subprocess.run(["npm", "install"], cwd=WEBUI_DIR, check=True)
+        subprocess.run(["npm", "install"], cwd=WEBUI_DIR, check=True, shell=True)
     
     print(f"🎨 启动前端服务... http://localhost:{FRONTEND_PORT}")
     proc = subprocess.Popen(
         ["npm", "run", "dev"],
         cwd=WEBUI_DIR,
+        shell=True,
     )
     processes.append(proc)
     return proc

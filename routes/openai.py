@@ -233,6 +233,7 @@ IMPORTANT: If calling tools, output ONLY the JSON. The response must start with 
                     last_content_time = time.time()  # 最后收到有效内容的时间
                     keepalive_count = 0  # 连续 keepalive 计数
                     has_content = False  # 是否收到过内容
+                    stream_finished = False  # 是否已发送过结束标记
 
                     def process_data():
                         """处理 DeepSeek SSE 数据流 - 使用 sse_parser 模块"""
@@ -382,6 +383,7 @@ IMPORTANT: If calling tools, output ONLY the JSON. The response must start with 
                                 yield f"data: {json.dumps(finish_chunk, ensure_ascii=False)}\n\n"
                                 yield "data: [DONE]\n\n"
                                 last_send_time = current_time
+                                stream_finished = True
                                 break
                                 
                             new_choices = []
@@ -430,8 +432,8 @@ IMPORTANT: If calling tools, output ONLY the JSON. The response must start with 
                         except queue.Empty:
                             continue
                             
-                    # 如果是超时退出，也发送结束标记
-                    if has_content:
+                    # 如果是超时退出且尚未发送结束标记，补发结束标记
+                    if has_content and not stream_finished:
                         prompt_tokens = len(final_prompt) // 4
                         thinking_tokens = len(final_thinking) // 4
                         completion_tokens = len(final_text) // 4
@@ -474,8 +476,7 @@ IMPORTANT: If calling tools, output ONLY the JSON. The response must start with 
                         
                 except Exception as e:
                     logger.error(f"[sse_stream] 异常: {e}")
-                finally:
-                    cleanup_account(request)
+                # 注意：不在此处调用 cleanup_account，由外层 finally 统一处理
 
             return StreamingResponse(
                 sse_stream(),

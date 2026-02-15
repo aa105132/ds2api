@@ -255,6 +255,26 @@ def parse_sse_chunk_for_content(
             return ([], True, new_fragment_type)
         contents.extend(result)
     
+    # 处理字典值（初始响应 chunk，包含 response.fragments）
+    elif isinstance(v_value, dict):
+        response_obj = v_value.get("response", v_value)
+        fragments = response_obj.get("fragments", [])
+        if isinstance(fragments, list):
+            for frag in fragments:
+                if isinstance(frag, dict):
+                    frag_type = frag.get("type", "").upper()
+                    frag_content = frag.get("content", "")
+                    if frag_type == "THINK" or frag_type == "THINKING":
+                        new_fragment_type = "thinking"
+                        if frag_content:
+                            contents.append((frag_content, "thinking"))
+                    elif frag_type == "RESPONSE":
+                        new_fragment_type = "text"
+                        if frag_content:
+                            contents.append((frag_content, "text"))
+                    elif frag_content:
+                        contents.append((frag_content, ptype))
+    
     return (contents, False, new_fragment_type)
 
 

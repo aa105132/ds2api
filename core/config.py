@@ -32,9 +32,14 @@ logger = logging.getLogger("ds2api")
 
 # -------------------------- 初始化 tokenizer --------------------------
 chat_tokenizer_dir = resolve_path("DS2API_TOKENIZER_DIR", "")
+# 抑制 Mistral tokenizer regex 警告（不影响 DeepSeek tokenization）
+_tf_logger = logging.getLogger("transformers")
+_tf_log_level = _tf_logger.level
+_tf_logger.setLevel(logging.ERROR)
 tokenizer = transformers.AutoTokenizer.from_pretrained(
     chat_tokenizer_dir, trust_remote_code=True
 )
+_tf_logger.setLevel(_tf_log_level)
 
 # ----------------------------------------------------------------------
 # 配置文件的读写函数

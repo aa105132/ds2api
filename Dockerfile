@@ -29,5 +29,17 @@ COPY --from=webui-builder /app/static/admin /app/static/admin
 # 暴露服务端口
 EXPOSE 5050
 
-# 启动命令（依赖项目自身的启动逻辑）
-CMD ["python", "app.py"]
+# 启动命令：使用 gunicorn + uvicorn worker（生产级部署）
+# - UvicornWorker: 比单独 uvicorn 更健壮，能更好地处理来自代理的非标准 HTTP 请求
+# - workers=1: 保持账号队列等内存状态一致性（ds2api 使用线程锁管理状态）
+# - timeout=600: 支持长时间的流式对话（如 DeepSeek 思考模式）
+# - graceful-timeout=30: 优雅停机等待时间
+# 如需切回直接 uvicorn 模式，可改为: CMD ["python", "app.py"]
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", \
+     "--bind", "0.0.0.0:5050", \
+     "--workers", "1", \
+     "--timeout", "600", \
+     "--graceful-timeout", "30", \
+     "--access-logfile", "-", \
+     "--error-logfile", "-", \
+     "app:app"]

@@ -81,7 +81,28 @@ async def chat_completions(request: Request):
         try:
             raw_body = await request.body()
             if not raw_body:
-                logger.error(f"[chat_completions] 请求体为空 (Content-Type: {request.headers.get('content-type', 'N/A')}, Content-Length: {request.headers.get('content-length', 'N/A')})")
+                # 详细诊断日志：记录完整请求头，帮助定位 body 为空的根因
+                # 常见原因：上游代理使用 curl_cffi impersonate="chrome" 发送 HTTP/2 升级请求，
+                # 导致 uvicorn 的 httptools/h11 解析器误处理请求体
+                diag_headers = dict(request.headers)
+                # 遮蔽敏感头
+                if "authorization" in diag_headers:
+                    auth_val = diag_headers["authorization"]
+                    diag_headers["authorization"] = auth_val[:15] + "..." if len(auth_val) > 15 else "***"
+                client_info = f"{request.client.host}:{request.client.port}" if request.client else "unknown"
+                logger.error(
+                    f"[chat_completions] 请求体为空 | "
+                    f"client={client_info} | "
+                    f"method={request.method} | "
+                    f"url={request.url} | "
+                    f"Content-Type={request.headers.get('content-type', 'N/A')} | "
+                    f"Content-Length={request.headers.get('content-length', 'N/A')} | "
+                    f"Transfer-Encoding={request.headers.get('transfer-encoding', 'N/A')} | "
+                    f"Connection={request.headers.get('connection', 'N/A')} | "
+                    f"Upgrade={request.headers.get('upgrade', 'N/A')} | "
+                    f"HTTP版本={request.scope.get('http_version', 'N/A')} | "
+                    f"全部请求头={diag_headers}"
+                )
                 return JSONResponse(
                     status_code=400,
                     content={

@@ -66,4 +66,15 @@ if __name__ == "__main__" and not IS_VERCEL:
     import uvicorn
 
     port = int(os.getenv("PORT", "5050"))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=port,
+        # 显式使用 h11 HTTP 解析器 + 禁用 WebSocket 升级处理
+        # 修复：当上游代理（如 curl_cffi impersonate="chrome"）发送带 Upgrade 头的请求时，
+        # uvicorn 默认会尝试处理升级请求，可能导致 POST body 丢失
+        # h11 对非标准请求的容错性更好；ws="none" 避免 upgrade 拦截
+        http="h11",
+        ws="none",
+        log_level=os.getenv("LOG_LEVEL", "info").lower(),
+    )
